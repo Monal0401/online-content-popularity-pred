@@ -1,107 +1,99 @@
-import sys
 import os
+import sys
 from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
-
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object
 
-
 @dataclass
 class DataTransformationConfig:
-    preprocessor_obj_file_path = os.path.join("artifacts", "preprocessor.pkl")
-
+    preprocessor_obj_file_path: str = os.path.join("artifacts", "preprocessor.pkl")
 
 class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
 
-    def get_data_transformer_object(self, features: pd.DataFrame) -> ColumnTransformer:
+    def get_data_transformer_object(self):
+        """
+        Create preprocessing pipeline for numerical columns
+        """
         try:
-            numerical_cols = features.select_dtypes(include=[np.number]).columns.tolist()
-
-            # If publish_day is present (one-hot encoded), remove from numerical
-            numerical_cols = [col for col in numerical_cols if not col.startswith("weekday_is_")]
+            # All features in your dataset are numerical after cleaning
+            num_pipeline = Pipeline(steps=[
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler())
+            ])
 
             preprocessor = ColumnTransformer(
                 transformers=[
-                    ("num", Pipeline([
-                        ("scaler", StandardScaler())
-                    ]), numerical_cols)
+                    ("num", num_pipeline, slice(0, -2))  # exclude last 2 target columns
                 ],
-                remainder='passthrough'  # to keep one-hot encoded day columns
+                remainder="passthrough"  # for log_shares and popularity_class
             )
+
+            logging.info("✅ Preprocessor pipeline created.")
             return preprocessor
+
         except Exception as e:
             raise CustomException(e, sys)
 
-    def initiate_data_transformation(self, train_path: str, test_path: str):
+    def initiate_data_transformation(self, train_path, test_path):
         try:
+            # Load train/test sets
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
 
-            logging.info("Loaded training and testing datasets")
+            logging.info("📄 Train and test datasets loaded.")
 
-            # Drop URL column if present
-            train_df.drop(columns=['url'], errors='ignore', inplace=True)
-            test_df.drop(columns=['url'], errors='ignore', inplace=True)
+            # Separate features and target
+            target_column = "log_shares"
+            classification_column = "popularity_class"
 
-            # Derive publish_day from weekday columns
-            if 'weekday_is_monday' in train_df.columns:
-                for df in [train_df, test_df]:
-                    df['publish_day'] = df.loc[:, 'weekday_is_monday':'weekday_is_sunday'].idxmax(axis=1)
-                    df['publish_day'] = df['publish_day'].apply(lambda x: x.split('_')[-1])
-                    df.drop(columns=df.loc[:, 'weekday_is_monday':'weekday_is_sunday'].columns, inplace=True)
+            X_train = train_df.drop(columns=["shares", target_column, classification_column], errors="ignore")
+            y_train = train_df[target_column]
+            y_train_cls = train_df[classification_column]
 
-            # One-hot encode publish_day
-            train_df = pd.get_dummies(train_df, columns=['publish_day'], drop_first=True)
-            test_df = pd.get_dummies(test_df, columns=['publish_day'], drop_first=True)
+            X_test = test_df.drop(columns=["shares", target_column, classification_column], errors="ignore")
+            y_test = test_df[target_column]
+            y_test_cls = test_df[classification_column]
 
-            # Align train/test columns after one-hot encoding
-            train_df, test_df = train_df.align(test_df, join='left', axis=1, fill_value=0)
+            # Build and apply preprocessor
+            preprocessor = self.get_data_transformer_object()
 
-            # Store target columns
-            target_reg = 'shares'
-            target_clf = 'popular'
+            X_train_transformed = preprocessor.fit_transform(X_train)
+            X_test_transformed = preprocessor.transform(X_test)
 
-            # Drop targets from input
-            input_features_train = train_df.drop(columns=[target_reg, target_clf])
-            input_features_test = test_df.drop(columns=[target_reg, target_clf])
+            logging.info("✅ Data transformation applied.")
 
-            # Get preprocessing object
-            preprocessing_obj = self.get_data_transformer_object(input_features_train)
+            # Combine features with both targets (you can choose which to use later)
+            train_arr = np.c_[
+                X_train_transformed, y_train.to_numpy().reshape(-1, 1), y_train_cls.to_numpy().reshape(-1, 1)
+            ]
+            test_arr = np.c_[
+                X_test_transformed, y_test.to_numpy().reshape(-1, 1), y_test_cls.to_numpy().reshape(-1, 1)
+            ]
 
-            # Fit-transform training data and transform test data
-            input_train_scaled = preprocessing_obj.fit_transform(input_features_train)
-            input_test_scaled = preprocessing_obj.transform(input_features_test)
-
-            # Save preprocessor
+            # Save the preprocessor object
             save_object(
                 file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessing_obj
+                obj=preprocessor
             )
 
-            # Output arrays for model training
-            train_arr = {
-                'X': input_train_scaled,
-                'y_reg': train_df[target_reg].values,
-                'y_clf': train_df[target_clf].values
-            }
-            test_arr = {
-                'X': input_test_scaled,
-                'y_reg': test_df[target_reg].values,
-                'y_clf': test_df[target_clf].values
-            }
+            logging.info("💾 Preprocessing object saved.")
 
-            return train_arr, test_arr, self.data_transformation_config.preprocessor_obj_file_path
+            return (
+                train_arr,
+                test_arr,
+                self.data_transformation_config.preprocessor_obj_file_path,
+            )
 
         except Exception as e:
             raise CustomException(e, sys)

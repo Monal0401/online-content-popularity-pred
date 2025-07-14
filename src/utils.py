@@ -9,7 +9,7 @@ from src.exception import CustomException
 
 def save_object(file_path, obj):
     """
-    Saves a Python object to the specified file path using dill.
+    Save any Python object (like a model, preprocessor, scaler) to the specified file path using dill.
     """
     try:
         dir_path = os.path.dirname(file_path)
@@ -24,7 +24,7 @@ def save_object(file_path, obj):
 
 def load_object(file_path):
     """
-    Loads a Python object from a file path using dill.
+    Load a Python object from a file path using dill.
     """
     try:
         with open(file_path, "rb") as file_obj:
@@ -34,15 +34,13 @@ def load_object(file_path):
         raise CustomException(e, sys)
 
 
-def evaluate_regression_model(y_true, y_pred):
+def evaluate_model(true, predicted):
     """
-    Returns RMSE and R² score for regression model evaluation.
+    Evaluate a regression model using R² score. Can be extended for other metrics.
     """
     try:
-        rmse = np.sqrt(np.mean((y_true - y_pred) ** 2))
-        r2 = r2_score(y_true, y_pred)
-        return {"RMSE": rmse, "R2_Score": r2}
+        score = r2_score(true, predicted)
+        return score
 
     except Exception as e:
         raise CustomException(e, sys)
-
