@@ -52,17 +52,23 @@ class DataIngestion:
                     return 2
             df['popularity_class'] = df['shares'].apply(classify_popularity)
 
-            # Save raw data
+            # Ensure directory exists, then save raw data
             os.makedirs(os.path.dirname(self.ingestion_config.raw_data_path), exist_ok=True)
             df.to_csv(self.ingestion_config.raw_data_path, index=False)
-            logging.info("📦 Raw data saved to artifacts/raw.csv")
+            logging.info(f"📦 Raw data saved → {self.ingestion_config.raw_data_path}")
 
-            # Split into train/test
-            train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
+            # Split into train/test (70/30 split)
+            train_df, test_df = train_test_split(df, test_size=0.3, random_state=42)
 
+            # Ensure directory exists, then save train data
+            os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
             train_df.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
+
+            # Ensure directory exists, then save test data
+            os.makedirs(os.path.dirname(self.ingestion_config.test_data_path), exist_ok=True)
             test_df.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
-            logging.info("✅ Train-test split complete. Data saved to artifacts/")
+
+            logging.info(f"✅ Train-test split (70/30) complete. Data saved in {os.path.dirname(self.ingestion_config.raw_data_path)}")
 
             return (
                 self.ingestion_config.train_data_path,

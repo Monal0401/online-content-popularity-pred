@@ -1,99 +1,91 @@
 import os
 import sys
-from dataclasses import dataclass
-
-import numpy as np
 import pandas as pd
+import numpy as np
+from dataclasses import dataclass
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object
 
+
 @dataclass
 class DataTransformationConfig:
-    preprocessor_obj_file_path: str = os.path.join("artifacts", "preprocessor.pkl")
+    preprocessor_obj_file_path: str = os.path.join('artifacts', 'preprocessor.pkl')
+
 
 class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
 
-    def get_data_transformer_object(self):
-        """
-        Create preprocessing pipeline for numerical columns
-        """
+    def initiate_data_transformation(self, train_path: str, test_path: str):
         try:
-            # All features in your dataset are numerical after cleaning
-            num_pipeline = Pipeline(steps=[
-                ("imputer", SimpleImputer(strategy="median")),
-                ("scaler", StandardScaler())
-            ])
-
-            preprocessor = ColumnTransformer(
-                transformers=[
-                    ("num", num_pipeline, slice(0, -2))  # exclude last 2 target columns
-                ],
-                remainder="passthrough"  # for log_shares and popularity_class
-            )
-
-            logging.info("✅ Preprocessor pipeline created.")
-            return preprocessor
-
-        except Exception as e:
-            raise CustomException(e, sys)
-
-    def initiate_data_transformation(self, train_path, test_path):
-        try:
-            # Load train/test sets
+            logging.info("Loading train and test datasets...")
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
 
-            logging.info("📄 Train and test datasets loaded.")
+            logging.info("Train and test datasets loaded.")
 
-            # Separate features and target
-            target_column = "log_shares"
-            classification_column = "popularity_class"
+            # Drop target columns from features
+            target_reg = 'log_shares'
+            target_cls = 'popularity_class'
 
-            X_train = train_df.drop(columns=["shares", target_column, classification_column], errors="ignore")
-            y_train = train_df[target_column]
-            y_train_cls = train_df[classification_column]
+            # Features exclude targets
+            features = [col for col in train_df.columns if col not in [target_reg, target_cls]]
 
-            X_test = test_df.drop(columns=["shares", target_column, classification_column], errors="ignore")
-            y_test = test_df[target_column]
-            y_test_cls = test_df[classification_column]
+            X_train = train_df[features]
+            X_test = test_df[features]
 
-            # Build and apply preprocessor
-            preprocessor = self.get_data_transformer_object()
+            y_train_reg = train_df[target_reg].values
+            y_train_cls = train_df[target_cls].values
 
-            X_train_transformed = preprocessor.fit_transform(X_train)
-            X_test_transformed = preprocessor.transform(X_test)
+            y_test_reg = test_df[target_reg].values
+            y_test_cls = test_df[target_cls].values
 
-            logging.info("✅ Data transformation applied.")
+            # Build preprocessing pipeline:
+            # Impute missing values with mean and scale features
+            # Use PolynomialFeatures degree=1 to avoid feature explosion (just pass features through)
+            numerical_pipeline = Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='mean')),
+                ('poly', PolynomialFeatures(degree=1, include_bias=False)),  # No actual expansion, just pass-through
+                ('scaler', StandardScaler())
+            ])
 
-            # Combine features with both targets (you can choose which to use later)
+            # Assuming all features are numeric here; if categorical, you can add categorical pipeline
+            preprocessor = ColumnTransformer(transformers=[
+                ('num', numerical_pipeline, features)
+            ])
+
+            logging.info("Fitting and transforming training data...")
+            X_train_processed = preprocessor.fit_transform(X_train)
+
+            logging.info("Transforming test data...")
+            X_test_processed = preprocessor.transform(X_test)
+
+            # Combine features and targets into final numpy arrays
+            # For model trainer: features + regression target + classification target (as last two columns)
             train_arr = np.c_[
-                X_train_transformed, y_train.to_numpy().reshape(-1, 1), y_train_cls.to_numpy().reshape(-1, 1)
+                X_train_processed,
+                y_train_reg,
+                y_train_cls
             ]
+
             test_arr = np.c_[
-                X_test_transformed, y_test.to_numpy().reshape(-1, 1), y_test_cls.to_numpy().reshape(-1, 1)
+                X_test_processed,
+                y_test_reg,
+                y_test_cls
             ]
 
-            # Save the preprocessor object
-            save_object(
-                file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessor
-            )
+            # Save preprocessing pipeline object
+            save_object(self.data_transformation_config.preprocessor_obj_file_path, preprocessor)
+            logging.info(f"Preprocessing object saved at: {self.data_transformation_config.preprocessor_obj_file_path}")
 
-            logging.info("💾 Preprocessing object saved.")
-
-            return (
-                train_arr,
-                test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path,
-            )
+            return train_arr, test_arr, self.data_transformation_config.preprocessor_obj_file_path
 
         except Exception as e:
+            logging.error("Error occurred during data transformation.")
             raise CustomException(e, sys)
