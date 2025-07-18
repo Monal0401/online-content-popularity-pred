@@ -3,10 +3,11 @@
 
 ## ✨ Quick Summary
 
-This project predicts the **popularity of online news articles** by:
-✅ Estimating **how many times an article will be shared** (Regression)
-✅ Classifying whether an article is **Popular 🔥 or Not Popular 📉** (Classification)
-✅ Providing an **interactive Gradio dashboard** for live predictions
+This project predicts the **popularity of online news articles** by:  
+
+- ✅ **Estimating how many times an article will be shared** (Regression)  
+- ✅ **Classifying whether an article is Popular 🔥 or Not Popular 📉** (Classification)  
+- ✅ **Providing an interactive Gradio dashboard for live predictions**  
 
 It automates **data ingestion → preprocessing → model training → evaluation → deployment**.
 
@@ -28,14 +29,15 @@ The project follows a **modular approach**, with separate pipelines for:
 
 ## 🛠 Tools & Technologies Used
 
-* **Python 3.10** → Core programming language
-* **Pandas & NumPy** → Data processing & numerical computations
-* **Scikit-learn** → ML preprocessing, regression, and classification models
-* **XGBoost** → Boosted models for better performance
-* **SMOTE** → Handling imbalanced datasets
-* **Matplotlib & Seaborn** → Exploratory Data Analysis (EDA) visualization
-* **Gradio** → Interactive web-based prediction dashboard
-* **Git & GitHub** → Version control and project hosting
+- 🐍 **Python 3.10+**  
+- 📊 **Pandas, NumPy** for data processing  
+- 🤖 **Scikit-learn, XGBoost, RandomForest** for Machine Learning  
+- 📈 **Matplotlib & Seaborn** for data visualization  
+- ⚙️ **SMOTE for handling imbalanced classification**  
+- 🏗 **Custom ML pipelines** (data ingestion, transformation, training)  
+- 🎨 **Gradio** for building an interactive prediction dashboard  
+- 📝 **Git & GitHub** for version control  
+
 
 ## 📂 Dataset
 
@@ -55,18 +57,24 @@ The project follows a **modular approach**, with separate pipelines for:
 * **Timing** (weekday publishing)
 * **Content categories** (lifestyle, tech, world, etc.)
 
-## 🛠 Workflow
+## 🛠 Workflow  
 
-1️⃣ **Data Loading & Cleaning**
-2️⃣ **Feature Engineering** → binary popularity label, one-hot encoding
-3️⃣ **Preprocessing** → scaling, handling imbalance with SMOTE
-4️⃣ **EDA** → visualizing correlations & distributions
-5️⃣ **Model Training**
-
-* **Regression:** Linear Regression, Random Forest, XGBoost
-* **Classification:** Random Forest Classifier, XGBoost Classifier
-  6️⃣ **Hyperparameter Tuning** with `GridSearchCV`
-  7️⃣ **Deployment** → Gradio-based prediction dashboard
+1️⃣ **Data Loading & Cleaning**  
+2️⃣ **Feature Engineering**  
+   - Created a binary popularity label  
+   - Applied one-hot encoding for categorical features  
+3️⃣ **Preprocessing**  
+   - Scaling numerical features  
+   - Handling imbalance with **SMOTE**  
+4️⃣ **Exploratory Data Analysis (EDA)**  
+   - Visualized feature correlations & distributions  
+5️⃣ **Model Training**  
+   - **Regression Models:** Linear Regression, Random Forest, XGBoost  
+   - **Classification Models:** Random Forest Classifier, XGBoost Classifier  
+6️⃣ **Hyperparameter Tuning**  
+   - Used `GridSearchCV` for model optimization  
+7️⃣ **Deployment**  
+   - Built a **Gradio-based interactive prediction dashboard**  
 
 ## 🖥 Gradio Dashboard
 
