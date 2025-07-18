@@ -78,11 +78,13 @@ The project follows a **modular approach**, with separate pipelines for:
 
 ## 🖥 Gradio Dashboard
 
-The interactive **Gradio app** allows you to:
-✅ Input article features
-✅ Get **predicted number of shares**
-✅ Get **popularity classification (Popular / Not Popular)**
-✅ Compare predicted shares vs average & median
+The interactive **Gradio app** allows you to:  
+
+✅ **Input article features**  
+✅ **Get predicted number of shares**  
+✅ **Get popularity classification (🔥 Popular / 📉 Not Popular)**  
+✅ **Compare predicted shares vs average & median**  
+
 
 ## 🔮 Future Improvements
 
