@@ -1,23 +1,43 @@
-Predicting Online Content Popularity
+Online Content Popularity Prediction
+Project Overview
+This project predicts the popularity of online content using machine learning techniques. It performs both:
 
-1.Project Structure Initialized
-Created basic folders: logs/, src/, components/, pipeline/
+Regression: Predicting the log of the number of shares.
 
-Setup standard files for modular development.
+Classification: Categorizing content popularity into classes (low, medium, high).
 
-2.Custom Logger (logger.py)
-Implemented a logger to store logs in the logs/ directory.
-Uses Python's built-in logging module.
+The end-to-end pipeline includes data ingestion, preprocessing, model training with hyperparameter tuning, and evaluation.
 
-3.Custom Exception Handling (exception.py)
-Created a class for custom exception tracking.
-Captures and logs error details for better debugging.
-
-4.Utilities (utils.py)
-Placeholder for common helper functions (to be expanded as needed).
-
-5.Setup Script (setup.py)
-Created to make the project pip-installable (in development).
-
-6.Requirements File
-A requirements.txt is included for dependency management.
+File Structure
+ONLINE_CONTENT_POPULARITY/
+│
+├── env/                         # Virtual environment (Python packages)
+├── logs/                        # Log files for debugging/tracking
+│
+├── notebook/
+│   ├── data/                    # Dataset folder (CSV files go here)
+│   ├── eda.ipynb                # Exploratory Data Analysis notebook
+│   └── model_training.ipynb     # Model training & evaluation notebook
+│
+├── src/                         # Source code
+│   ├── __pycache__/             # Compiled Python cache files
+│   │
+│   ├── components/              # Data processing & ML components
+│   │   ├── __init__.py
+│   │   ├── data_ingestion.py
+│   │   ├── data_transformation.py
+│   │   └── model_trainer.py
+│   │
+│   ├── pipeline/                # Training & prediction pipelines
+│   │   ├── __init__.py
+│   │   ├── predict_pipeline.py
+│   │   └── train_pipeline.py
+│   │
+│   ├── exception.py             # Custom exception handling
+│   ├── logger.py                # Logging utility
+│   └── utils.py                 # Helper/utility functions
+│
+├── .gitignore                   # Git ignore rules
+├── Readme.md                    # Project documentation
+├── requirements.txt             # Dependencies list
+└── setup.py                     # Installation setup script
