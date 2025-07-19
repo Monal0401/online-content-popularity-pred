@@ -87,6 +87,13 @@ The interactive **Gradio app** allows you to:
 ✅ **Compare predicted shares vs average & median**  
 
 
+## 📸 Dashboard Preview  
+
+Here’s how the **Online Content Popularity Dashboard** looks:  
+
+![Dashboard Preview](images/dashboard.png)
+
+
 ## 🔮 Future Improvements
 
 * Add **deep learning models (LSTM, Transformers)**
