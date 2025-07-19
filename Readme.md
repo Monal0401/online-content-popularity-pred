@@ -59,22 +59,23 @@ The project follows a **modular approach**, with separate pipelines for:
 
 ## 🛠 Workflow  
 
-1️⃣ **Data Loading & Cleaning**  
-2️⃣ **Feature Engineering**  
+1. **Data Loading & Cleaning**  
+2. **Feature Engineering**  
    - Created a binary popularity label  
    - Applied one-hot encoding for categorical features  
-3️⃣ **Preprocessing**  
+3. **Preprocessing**  
    - Scaling numerical features  
    - Handling imbalance with **SMOTE**  
-4️⃣ **Exploratory Data Analysis (EDA)**  
+4. **Exploratory Data Analysis (EDA)**  
    - Visualized feature correlations & distributions  
-5️⃣ **Model Training**  
+5. **Model Training**  
    - **Regression Models:** Linear Regression, Random Forest, XGBoost  
    - **Classification Models:** Random Forest Classifier, XGBoost Classifier  
-6️⃣ **Hyperparameter Tuning**  
+6. **Hyperparameter Tuning**  
    - Used `GridSearchCV` for model optimization  
-7️⃣ **Deployment**  
+7. **Deployment**  
    - Built a **Gradio-based interactive prediction dashboard**  
+
 
 ## 🖥 Gradio Dashboard
 
